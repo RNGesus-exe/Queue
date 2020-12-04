@@ -2,6 +2,7 @@
 // Created by rngesus on 12/1/20.
 //
 #include<iostream>
+#include<array>
 
 class Queue{
     int front;
@@ -105,36 +106,120 @@ public:
     }
 };
 
-int main(){
-    int size = 5;
-    CircularQueue<int> cq(size+1);
-    cq.enqueue(10);
-    cq.enqueue(20);
-    cq.enqueue(69);
-    cq.enqueue(79);
-    cq.enqueue(44);
-    //========= F 10 20 69 79 44(R) =====
-    cq.enqueue(1);
-    cq.enqueue(1);
-    cq.enqueue(1);
-    //========= F 10 20 69 79 44(R) =====
-    cq.dequeue();
-    cq.dequeue();
-    cq.dequeue();
-    //========= 0 0 0 F 79 44(R)=====
-    cq.enqueue(10);
-    cq.enqueue(10);
-    cq.enqueue(10);
-    //========= 10 10 10(R) F 79 44====
-    cq.dequeue();
-    cq.dequeue();
-    //========= 10 10 10(R) 0 0 F======
-    cq.enqueue(5);
-    cq.enqueue(10);
-    //========= 10 10 10 5 10(R) F====
-    cq.dequeue();
-    cq.dequeue();
-    //========= 0 F 10 5 10(R) 0====
+template<class T>
+class DEQueue{
+    class Node{
+    public:
+        Node* prev;
+        T data;
+        Node* next;
+    }*front,*rear;
+public:
+    DEQueue(): front(nullptr),rear(nullptr){}
+    DEQueue(T data){
+        this->enqueueFront(data);
+    }
+    void enqueueFront(T data){
+        Node *temp = new Node;
+        if(!this->front){
+            this->rear = this->front = temp;
+            this->rear->next = this->front;
+            this->front->prev = this->rear;
+        }
+        else{
+              temp->next = this->front;
+              this->front->prev = temp;
+              this->rear->next = temp;
+              temp->prev = this->rear;
+              this->front = temp;
+        }
+        temp = nullptr;
+        this->front->data = data;
+    }
+    void enqueueRear(T data){
+        if(!this->front){
+            this->enqueueFront(data);
+        }
+        else{
+            Node* temp = new Node;
+            temp->prev = this->rear;
+            this->rear->next = temp;
+            this->rear = temp;
+            temp = nullptr;
+            this->rear->next = this->front;
+            this->front->prev = this->rear;
+            this->rear->data = data;
+        }
+    }
+    T dequeueFront(){
+        T temp = INT16_MIN;
+        if(this->front) {
+            temp = this->front->data;
+            if (this->front == this->rear) {
+                delete this->front;
+                this->front = this->rear = nullptr;
+            } else {
+                this->front = this->front->next;
+                delete this->front->prev;
+                this->front->prev = this->rear;
+                this->rear->next = this->front;
+            }
+        }
+        return temp;
+    }
+    T dequeueRear(){
+        T temp = INT16_MIN;
+        if(this->rear) {
+            temp = this->rear->data;
+            if (this->front == this->rear) {
+                delete this->front;
+                this->front = this->rear = nullptr;
+            } else {
+                this->rear = this->rear->prev;
+                delete this->rear->next;
+                this->front->prev = this->rear;
+                this->rear->next = this->front;
+            }
+        }
+        return temp;
+    }
+    void stackPrint() const{
+        Node *temp = this->rear;
+        do{
+            std::cout<< temp->data <<" ";
+            temp = temp->prev;
+        }while(temp!=this->rear);
+        std::cout<<std::endl;
+    }
+    void queuePrint() const{
+        Node *temp = this->front;
+        do{
+            std::cout<< temp->data <<" ";
+            temp = temp->next;
+        }while(temp!=this->front);
+        std::cout<<std::endl;
+    }
+    ~DEQueue(){
+        while(this->front){
+            this->dequeueFront();
+        }
+    }
+};
 
+
+int main(){
+    DEQueue<int> dq;
+    dq.enqueueRear(10);
+    dq.enqueueRear(4);
+    dq.enqueueRear(7);
+    //============================10 4 7
+    dq.dequeueFront();
+    //============================4 7
+    dq.enqueueFront(22);
+    dq.enqueueFront(44);
+    //============================44 22 4 7
+    dq.dequeueRear();
+    //============================44 22 4
+    dq.queuePrint();
     return 0;
 }
